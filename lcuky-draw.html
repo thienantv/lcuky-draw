@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quay Số May Mắn</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+}
+
+body {
+    margin: 0;
+    height: 100vh;
+    background: radial-gradient(circle at top, #dfffe0, #9fe6a0);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.screen {
+    width: 100%;
+    height: 100%;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+h1 {
+    font-size: clamp(36px, 6vw, 72px);
+    color: #1b5e20;
+    margin-bottom: 40px;
+    letter-spacing: 2px;
+}
+
+.number-board {
+    display: flex;
+    gap: 25px;
+    margin-bottom: 30px;
+}
+
+.digit {
+    width: clamp(130px, 16vw, 200px);   /* Mặc định 130px, 16vw, 200px */
+    height: clamp(180px, 22vw, 260px);  /* Mặc định 180px, 22vw, 260px */
+    background: #ffffff;
+    border-radius: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: clamp(90px, 12vw, 160px);    /* Mặc định 90px, 12vw, 160px */
+    font-weight: 800;
+    color: #2e7d32;
+    box-shadow: 0 18px 40px rgba(0,0,0,0.2);
+}
+
+.digit.running {
+    animation: shake 0.15s infinite alternate;
+}
+
+@keyframes shake {
+    from { transform: translateY(0); }
+    to   { transform: translateY(-10px); }
+}
+
+.hint {
+    font-size: clamp(18px, 2.5vw, 26px);
+    margin-bottom: 30px;
+    color: #444;
+}
+
+button {
+    font-size: clamp(22px, 3vw, 32px);
+    padding: 22px 50px;
+    border: none;
+    border-radius: 22px;
+    background: linear-gradient(135deg, #43a047, #1b5e20);
+    color: #fff;
+    cursor: pointer;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+    transition: 0.3s;
+}
+
+button:hover {
+    transform: scale(1.05);
+}
+
+button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+</style>
+</head>
+
+<body>
+
+<div class="screen">
+    <h1>QUAY SỐ MAY MẮN</h1>
+
+    <div class="number-board">
+        <div class="digit">0</div>
+        <div class="digit">0</div>
+        <div class="digit">0</div>
+        <div class="digit">0</div>
+        <div class="digit">0</div>
+    </div>
+
+    <div class="hint">Nhấn nút hoặc phím <b>SPACE</b> để quay</div>
+
+    <button id="startBtn">BẮT ĐẦU QUAY SỐ</button>
+</div>
+
+<!-- ÂM THANH -->
+<audio id="spinSound" src="spin.mp3" loop></audio>
+<audio id="winSound" src="win.mp3"></audio>
+
+<script>
+/* ========= CẤU HÌNH ========= */
+const MIN_NUMBER = 1;
+const MAX_NUMBER = 19200;
+const DIGITS = 5;
+const SPIN_DURATION = 1000;      // Thời gian quay chung
+const STOP_DELAY = 750;          // Độ trễ dừng mỗi số (ms)
+
+/* ========= CODE ========= */
+const digits = document.querySelectorAll('.digit');
+const btn = document.getElementById('startBtn');
+
+const spinSound = document.getElementById('spinSound');
+const winSound  = document.getElementById('winSound');
+
+let rollingIntervals = [];
+
+function randomDigit() {
+    return Math.floor(Math.random() * 10);
+}
+
+function formatNumber(num) {
+    return num.toString().padStart(DIGITS, '0');
+}
+
+function randomInRange(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+/* ========= HÀM QUAY ========= */
+function startSpin() {
+    if (btn.disabled) return;
+    btn.disabled = true;
+
+    const finalNumber = randomInRange(MIN_NUMBER, MAX_NUMBER);
+    const result = formatNumber(finalNumber);
+
+    spinSound.currentTime = 0;
+    spinSound.play();
+
+    // mỗi số chạy độc lập
+    digits.forEach((digit, index) => {
+        digit.classList.add('running');
+
+        rollingIntervals[index] = setInterval(() => {
+            digit.textContent = randomDigit();
+        }, 70);
+    });
+
+    // dừng từng số lần lượt
+    digits.forEach((digit, index) => {
+        setTimeout(() => {
+            clearInterval(rollingIntervals[index]);
+            digit.textContent = result[index];
+            digit.classList.remove('running');
+
+            // số cuối cùng thì phát âm thanh chiến thắng
+            if (index === digits.length - 1) {
+                spinSound.pause();
+                winSound.currentTime = 0;
+                winSound.play();
+                btn.disabled = false;
+            }
+        }, SPIN_DURATION + index * STOP_DELAY);
+    });
+}
+
+/* ========= SỰ KIỆN ========= */
+btn.onclick = startSpin;
+
+document.addEventListener('keydown', (e) => {
+    if (e.code === 'Space') {
+        e.preventDefault();
+        startSpin();
+    }
+});
+</script>
+
+</body>
+</html>
