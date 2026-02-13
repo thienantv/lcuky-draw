@@ -67,6 +67,7 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    transform: scale(1.8);
 }
 
 h1 {
@@ -106,13 +107,13 @@ h1 {
 }
 
 .hint {
-    font-size: 1.5vw;
+    font-size: 1vw;
     margin-bottom: 2vh;
     color: #444;
 }
 
 button {
-    font-size: 1.8vw;
+    font-size: 1vw;
     padding: 1vh 3vw;
     border: none;
     border-radius: 2vw;
